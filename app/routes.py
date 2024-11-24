@@ -20,7 +20,7 @@ def user_register(
         status_code=status.HTTP_201_CREATED
     )
 
-router.post('/login')
+@router.post('/login')
 def user_register(
         request_form_user: OAuth2PasswordRequestForm = Depends(),
         db_session: Session = Depends(get_db_session)
@@ -28,7 +28,7 @@ def user_register(
     uc = UserUseCases(db_session=db_session)
 
     user = User(
-        username=request_form_user.username,
+        email=request_form_user.username.strip(),
         password=request_form_user.password
     )
 

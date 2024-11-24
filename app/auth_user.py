@@ -20,8 +20,11 @@ class UserUseCases:
 
     def user_register(self, user: User):
         user_model = UserModel(
+            name = user.name,
             email = user.email,
-            password = crypt_context.hash(user.password)
+            password = crypt_context.hash(user.password),
+            created_at = datetime.utcnow(),
+            last_access = datetime.utcnow()
         )
         try:
             self.db_session.add(user_model)
@@ -33,24 +36,24 @@ class UserUseCases:
             )
         
     def user_login(self, user: User, expires_in: int = 30):
-        user_on_db = self.db_session.query(UserModel).filter_by(username=user.username).first()
+        user_on_db = self.db_session.query(UserModel).filter_by(email=user.email).first()
 
         if user_on_db is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail='INvalid username or passsword' 
+                detail='Invalid email or passsword' 
             )
         
         if not crypt_context.verify(user.password, user_on_db.password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail='Invalid username or password'
+                detail='Invalid email or password'
             )
         
         exp = datetime.utcnow() + timedelta(minutes=expires_in)
 
         payload = {
-            'sub': user.username,
+            'sub': user.email,
             'exp': exp
         }
 
